@@ -16,18 +16,19 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
-
 import java.sql.SQLException;
 
 import static hello.jdbc.connection.ConnectionConst.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * 트랜잭션 - @Transactional AOP
+ * 트랜잭션 - DataSource, transactionManager 자동등록
  */
 @Slf4j
 @SpringBootTest
-class MemberServiceV3_3Test {
+class MemberServiceV3_4Test {
+
     public static final String MEMBER_A = "memberA";
     public static final String MEMBER_B = "memberB";
     public static final String MEMBER_EX = "ex";
@@ -46,24 +47,20 @@ class MemberServiceV3_3Test {
 
     @TestConfiguration
     static class testConfig {
-        @Bean
-        DataSource dataSource() {
-            return new DriverManagerDataSource(URL, USER, PASSWORD);
+        private final DataSource dataSource;
+
+        public testConfig(DataSource dataSource) {
+            this.dataSource = dataSource;
         }
 
         @Bean
-        PlatformTransactionManager transactionManager() {
-            return new DataSourceTransactionManager(dataSource());
+        MemberRepositoryV3 memberRepositoryV3() {
+            return new MemberRepositoryV3(dataSource);
         }
 
         @Bean
-        MemberRepositoryV3 memberRepository() {
-            return new MemberRepositoryV3(dataSource());
-        }
-
-        @Bean
-        MemberServiceV3_3 memberService() {
-            return new MemberServiceV3_3(memberRepository());
+        MemberServiceV3_3 memberServiceV3_3() {
+            return new MemberServiceV3_3(memberRepositoryV3());
         }
     }
 
